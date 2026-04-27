@@ -70,12 +70,12 @@ public class CPUSchedulerGUI extends JFrame {
         "FCFS", "SJF", "SRT", "Round Robin", "Priority", "Priority + RR"
     };
     private static final String[] ALGO_DESC = {
-        "First-Come, First-Served — Non-Preemptive",
-        "Shortest Job First — Non-Preemptive",
-        "Shortest Remaining Time — Preemptive",
-        "Round Robin — Preemptive (requires Quantum)",
-        "Priority Scheduling — Non-Preemptive",
-        "Priority + Round Robin — Preemptive"
+        "First-Come, First-Served - Non-Preemptive",
+        "Shortest Job First - Non-Preemptive",
+        "Shortest Remaining Time - Preemptive",
+        "Round Robin - Preemptive (requires Quantum)",
+        "Priority Scheduling - Non-Preemptive",
+        "Priority + Round Robin - Preemptive"
     };
 
 
