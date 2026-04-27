@@ -29,7 +29,7 @@ public class CPUSchedulerGUI extends JFrame {
     };
 
     private static final int F_HEADER    = 20;   // top banner title
-    private static final int F_SECTION   = 13;   // section labels (01 SELECT ALGO …)
+    private static final int F_SECTION   = 13;   // section labels (01 SELECT ALGO...)
     private static final int F_BUTTON    = 13;   // algorithm buttons
     private static final int F_LABEL     = 13;   // field labels (Processes:, Quantum:)
     private static final int F_COL_HDR   = 12;   // process-input column headers
@@ -46,24 +46,24 @@ public class CPUSchedulerGUI extends JFrame {
     private static final int F_GANTT_TIM = 11;   // time-axis numbers below Gantt
 
     // Application state
-    private String  selectedAlgo  = "FCFS";
+    private String selectedAlgo = "FCFS";
     private boolean lowerIsBetter = true;
-    private int     numProcesses  = 3;
+    private int numProcesses = 3;
 
     // Input widgets
     private JTextField[] pidFields, atFields, btFields, prioFields;
-    private JSpinner     numProcSpinner, quantumSpinner;
+    private JSpinner numProcSpinner, quantumSpinner;
     private JComboBox<String> prioOrderCombo;
-    private JPanel       procInputPanel;
-    private JButton[]    algoButtons;
+    private JPanel procInputPanel;
+    private JButton[] algoButtons;
 
     // Output widgets
-    private GanttPanel        ganttPanel;
-    private JTable            resultTable;
+    private GanttPanel ganttPanel;
+    private JTable resultTable;
     private DefaultTableModel resultModel;
-    private JLabel            avgCTLabel, avgWTLabel, avgTATLabel;
-    private JPanel            ctBreakdownPanel;   // replaces trace log
-    private JLabel            algoNoteLabel;
+    private JLabel avgCTLabel, avgWTLabel, avgTATLabel;
+    private JPanel ctBreakdownPanel;
+    private JLabel algoNoteLabel;
 
     // Algorithm metadata
     private static final String[] ALGO_NAMES = {
@@ -78,9 +78,8 @@ public class CPUSchedulerGUI extends JFrame {
         "Priority + Round Robin — Preemptive"
     };
 
-    // ════════════════════════════════════════════════════════════════
+
     // ENTRY POINT
-    // ════════════════════════════════════════════════════════════════
     public static void main(String[] args) {
         try { UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName()); }
         catch (Exception ignored) {}
@@ -88,9 +87,8 @@ public class CPUSchedulerGUI extends JFrame {
         SwingUtilities.invokeLater(() -> new CPUSchedulerGUI().setVisible(true));
     }
 
-    // ════════════════════════════════════════════════════════════════
+
     // CONSTRUCTOR
-    // ════════════════════════════════════════════════════════════════
     public CPUSchedulerGUI() {
         setTitle("CPU Scheduling Simulator");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -116,9 +114,7 @@ public class CPUSchedulerGUI extends JFrame {
         rebuildProcessRows();
     }
 
-    // ════════════════════════════════════════════════════════════════
     // HEADER BAR
-    // ════════════════════════════════════════════════════════════════
     private JPanel buildHeader() {
         JPanel p = new JPanel(new BorderLayout());
         p.setBackground(CARD);
@@ -135,7 +131,7 @@ public class CPUSchedulerGUI extends JFrame {
     }
 
 
-    // LEFT PANEL — Algorithm selector + process input
+    // LEFT PANEL - Algorithm selector + process input
     private JScrollPane buildLeftPanel() {
         JPanel root = new JPanel();
         root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
@@ -250,7 +246,7 @@ public class CPUSchedulerGUI extends JFrame {
     }
 
 
-    // RIGHT PANEL — Gantt + Table + Metrics + CT Breakdown
+    // RIGHT PANEL - Gantt + Table + Metrics + CT Breakdown
     private JPanel buildRightPanel() {
         JPanel root = new JPanel(new BorderLayout());
         root.setBackground(BG);
@@ -346,7 +342,7 @@ public class CPUSchedulerGUI extends JFrame {
     }
 
 
-    // METRICS PANEL — three stat cards: Avg CT, Avg WT, Avg TAT
+    // METRICS PANEL - three stat cards: Avg CT, Avg WT, Avg TAT
 
     private JPanel buildMetricsPanel() {
         JPanel p = new JPanel(new GridLayout(1, 3, 14, 0));
@@ -487,7 +483,7 @@ public class CPUSchedulerGUI extends JFrame {
 
 
     // SIMULATION RUNNER
-    // Reads input → validates → calls algorithm → renders all panels
+    // Reads input -> validates -> calls algorithm -> renders all panels
 
     private void runSimulation() {
 
@@ -515,21 +511,21 @@ public class CPUSchedulerGUI extends JFrame {
 
         int quantum = (int) quantumSpinner.getValue();
 
-        // ── Run chosen algorithm
+        // Run chosen algorithm
         StringBuilder log = new StringBuilder();
         SchedulerResult result;
 
         switch (selectedAlgo) {
-            case "FCFS"          -> result = Algorithms.fcfs(processes, log);
-            case "SJF"           -> result = Algorithms.sjf(processes, log);
-            case "SRT"           -> result = Algorithms.srt(processes, log);
-            case "Round Robin"   -> result = Algorithms.roundRobin(processes, quantum, log);
-            case "Priority"      -> result = Algorithms.priorityNP(processes, lowerIsBetter, log);
+            case "FCFS"-> result = Algorithms.fcfs(processes, log);
+            case "SJF" -> result = Algorithms.sjf(processes, log);
+            case "SRT" -> result = Algorithms.srt(processes, log);
+            case "Round Robin" -> result = Algorithms.roundRobin(processes, quantum, log);
+            case "Priority" -> result = Algorithms.priorityNP(processes, lowerIsBetter, log);
             case "Priority + RR" -> result = Algorithms.priorityRR(processes, quantum, lowerIsBetter, log);
-            default              -> result = Algorithms.fcfs(processes, log);
+            default -> result = Algorithms.fcfs(processes, log);
         }
 
-        // ── Render all output sections ────────────────────────────
+        // Render all output sections
         renderGantt(result.gantt, processes);
         renderTable(result.results, needsPrio);
         renderMetrics(result.results);
@@ -537,8 +533,7 @@ public class CPUSchedulerGUI extends JFrame {
     }
 
 
-    // RENDER — Gantt Chart
-
+    // RENDER - Gantt Chart
     private void renderGantt(List<GanttEntry> gantt, Process[] processes) {
         Map<String, Integer> colorMap = new HashMap<>();
         for (Process p : processes) colorMap.put(p.id, p.index % PROC_COLORS.length);
@@ -546,9 +541,8 @@ public class CPUSchedulerGUI extends JFrame {
     }
 
 
-    // RENDER — Results Table
+    // RENDER - Results Table
     // Columns: PID | AT | BT | Priority | CT | WT | TAT
-
     private void renderTable(List<Process> results, boolean showPriority) {
         resultModel.setRowCount(0);
         List<Process> sorted = new ArrayList<>(results);
@@ -568,8 +562,7 @@ public class CPUSchedulerGUI extends JFrame {
     }
 
 
-    // RENDER — Performance Metrics (Avg CT, WT, TAT)
-
+    // RENDER - Performance Metrics (Avg CT, WT, TAT)
     private void renderMetrics(List<Process> results) {
         if (results.isEmpty()) return;
         double sumCT = 0, sumWT = 0, sumTAT = 0;
@@ -585,8 +578,7 @@ public class CPUSchedulerGUI extends JFrame {
     }
 
 
-    // RENDER — Completion Time Breakdown
-
+    // RENDER - Completion Time Breakdown
     private void renderCTBreakdown(List<Process> results) {
         ctBreakdownPanel.removeAll();
 
@@ -653,7 +645,6 @@ public class CPUSchedulerGUI extends JFrame {
 
 
     // UI FACTORY HELPERS
-
     /** Section title label (e.g. "01  SELECT ALGORITHM") */
     private JLabel sectionLabel(String text) {
         JLabel l = new JLabel(text);
@@ -794,8 +785,7 @@ public class CPUSchedulerGUI extends JFrame {
     }
 
 
-    // INNER CLASS — GanttPanel
-
+    // INNER CLASS - GanttPanel
     class GanttPanel extends JPanel {
 
         private List<GanttEntry>    gantt    = new ArrayList<>();

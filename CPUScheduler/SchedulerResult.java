@@ -1,7 +1,7 @@
 import java.util.List;
 
 /**
- * GanttEntry — one contiguous CPU block on the Gantt chart.
+ * GanttEntry - one contiguous CPU block on the Gantt chart.
  * pid = "IDLE" for idle gaps between processes.
  */
 class GanttEntry {

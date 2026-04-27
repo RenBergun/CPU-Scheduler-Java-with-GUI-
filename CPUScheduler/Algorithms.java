@@ -1,28 +1,18 @@
 import java.util.*;
 
-/**
- * ╔══════════════════════════════════════════════════════════════════╗
- * ║  Algorithms.java — All Six CPU Scheduling Algorithms            ║
- * ║                                                                  ║
- * ║  Each static method:                                             ║
- * ║    • Accepts a Process[] (never mutated — deep-copied inside)   ║
- * ║    • Returns a SchedulerResult { gantt, results }               ║
- * ║    • Appends trace lines to a StringBuilder for the GUI log     ║
- * ╚══════════════════════════════════════════════════════════════════╝
- */
 public class Algorithms {
 
-    // ══════════════════════════════════════════════════════════════
-    // ALGORITHM 1 — FCFS: First-Come, First-Served (Non-Preemptive)
+    // =============================================================
+    // ALGORITHM 1 - FCFS: First-Come, First-Served (Non-Preemptive)
     //
     // Concept:
     //   Processes execute in the order they arrive.  No preemption —
     //   once started, a process runs to completion.  Ties in arrival
     //   time are broken by original input order (index).
     //
-    // Weakness: "Convoy effect" — a long process blocks all shorter
+    // Weakness: "Convoy effect" which is a long process that blocks all shorter
     //   ones that arrive just after it.
-    // ══════════════════════════════════════════════════════════════
+    // ===============================================================
     public static SchedulerResult fcfs(Process[] original, StringBuilder log) {
 
         // Sort a deep copy by arrival time; ties broken by index
@@ -38,7 +28,7 @@ public class Algorithms {
 
         for (Process p : ps) {
 
-            // ── CPU idle gap: no process has arrived yet ──────────────
+            // CPU idle gap: no process has arrived yet
             if (time < p.arrivalTime) {
                 log.append(String.format("  [t=%-3d] IDLE  — waiting for %s to arrive at t=%d%n",
                         time, p.id, p.arrivalTime));
@@ -46,16 +36,16 @@ public class Algorithms {
                 time = p.arrivalTime;
             }
 
-            // ── Dispatch p: it runs for its full burst (non-preemptive) ──
+            // Dispatch p: it runs for its full burst (non-preemptive)
             int start = time;
-            int end   = time + p.burstTime;
+            int end = time + p.burstTime;
             log.append(String.format("  [t=%-3d] RUN   %-4s | BT=%d | finishes at t=%d%n",
                     start, p.id, p.burstTime, end));
             time = end;
 
             gantt.add(new GanttEntry(p.id, start, end));
 
-            // ── Compute Completion Time, WT, TAT ─────────────────────
+            // Compute Completion Time, WT, TAT
             p.finishTime     = end;                              // CT  = time when done
             p.turnaroundTime = p.finishTime - p.arrivalTime;    // TAT = CT  - AT
             p.waitingTime    = p.turnaroundTime - p.burstTime;  // WT  = TAT - BT
@@ -69,19 +59,19 @@ public class Algorithms {
     }
 
 
-    // ══════════════════════════════════════════════════════════════
-    // ALGORITHM 2 — SJF: Shortest Job First (Non-Preemptive)
+    // ==========================================================
+    // ALGORITHM 2 - SJF: Shortest Job First (Non-Preemptive)
     //
     // Concept:
     //   At each scheduling decision point, all processes that have
     //   already arrived are inspected.  The one with the SMALLEST
     //   burst time is dispatched and runs to completion.
     //
-    // Tie-breaking: smaller BT wins; equal BT → earlier AT → lower index.
+    // Tie-breaking: smaller BT wins; equal BT -> earlier AT -> lower index
     //
     // Optimality: SJF gives the minimum average WT among all
     //   non-preemptive algorithms (proven optimal).
-    // ══════════════════════════════════════════════════════════════
+    // ============================================================
     public static SchedulerResult sjf(Process[] original, StringBuilder log) {
 
         Process[] ps = deepCopy(original);
@@ -93,7 +83,7 @@ public class Algorithms {
 
         while (completed < ps.length) {
 
-            // ── Find shortest available process ───────────────────────
+            // Find the shortest available process
             Process best = null;
             for (Process p : ps) {
                 if (!p.isDone && p.arrivalTime <= time) {
@@ -107,7 +97,7 @@ public class Algorithms {
                 }
             }
 
-            // ── No process ready: CPU idles until next arrival ────────
+            // No process ready: CPU idles until next arrival
             if (best == null) {
                 int next = Integer.MAX_VALUE;
                 for (Process p : ps)
@@ -118,7 +108,7 @@ public class Algorithms {
                 continue;
             }
 
-            // ── Dispatch shortest job (non-preemptive) ────────────────
+            // Dispatch shortest job (non-preemptive)
             int start = time, end = time + best.burstTime;
             log.append(String.format("  [t=%-3d] RUN   %-4s | BT=%d (shortest) | finishes at t=%d%n",
                     start, best.id, best.burstTime, end));
@@ -146,8 +136,8 @@ public class Algorithms {
     }
 
 
-    // ══════════════════════════════════════════════════════════════
-    // ALGORITHM 3 — SRT: Shortest Remaining Time (Preemptive SJF)
+    // ============================================================
+    // ALGORITHM 3 - SRT: Shortest Remaining Time (Preemptive SJF)
     //
     // Concept:
     //   At every clock tick, the scheduler picks the process with
@@ -158,7 +148,7 @@ public class Algorithms {
     // Implementation detail:
     //   Simulated one tick at a time.  Consecutive same-PID ticks
     //   are merged into one Gantt block for readability.
-    // ══════════════════════════════════════════════════════════════
+    // =============================================================
     public static SchedulerResult srt(Process[] original, StringBuilder log) {
 
         Process[] ps = deepCopy(original);
@@ -174,7 +164,7 @@ public class Algorithms {
 
         while (completed < ps.length && time <= maxTime) {
 
-            // ── Find process with minimum remaining time ───────────────
+            // Find the process with minimum remaining time
             Process running = null;
             for (Process p : ps) {
                 if (!p.isDone && p.arrivalTime <= time) {
@@ -188,7 +178,7 @@ public class Algorithms {
                 }
             }
 
-            // ── CPU idle tick ──────────────────────────────────────────
+            // CPU idle tick
             if (running == null) {
                 if (!"IDLE".equals(segPid)) {
                     if (segPid != null) gantt.add(new GanttEntry(segPid, segStart, time));
@@ -199,7 +189,7 @@ public class Algorithms {
                 continue;
             }
 
-            // ── Context switch: a different process now holds the CPU ──
+            // Context switch: a different process now holds the CPU
             if (!running.id.equals(segPid)) {
                 if (segPid != null) {
                     gantt.add(new GanttEntry(segPid, segStart, time));
@@ -216,11 +206,11 @@ public class Algorithms {
                 segPid = running.id; segStart = time;
             }
 
-            // ── Execute one tick ───────────────────────────────────────
+            // Execute one tick
             running.remainingTime--;
             time++;
 
-            // ── Process just finished ──────────────────────────────────
+            // Process just finished
             if (running.remainingTime == 0) {
                 gantt.add(new GanttEntry(running.id, segStart, time));
                 segPid = null;
@@ -239,19 +229,19 @@ public class Algorithms {
     }
 
 
-    // ══════════════════════════════════════════════════════════════
-    // ALGORITHM 4 — Round Robin (Preemptive)
+    // ============================================================
+    // ALGORITHM 4 - Round Robin (Preemptive)
     //
     // Concept:
     //   Processes share the CPU in a cyclic order.  Each gets at
-    //   most `quantum` time units per turn.  If not finished, the
+    //   most "quantum" time units per turn.  If not finished, the
     //   process is placed at the BACK of the ready queue.
     //   New arrivals during a quantum join the queue after the
     //   current process either finishes or is re-enqueued.
     //
     // Fairness: No process waits more than (n−1)×quantum time
-    //   units before its next turn — strong fairness guarantee.
-    // ══════════════════════════════════════════════════════════════
+    //   units before its next turn which guarantee strong fairness.
+    // ==============================================================
     public static SchedulerResult roundRobin(Process[] original, int quantum, StringBuilder log) {
 
         Process[] ps = deepCopy(original);
@@ -271,7 +261,7 @@ public class Algorithms {
 
         while (!queue.isEmpty() || nextIdx < ps.length) {
 
-            // ── CPU idle: queue empty, jump to next arrival ────────────
+            // CPU idle: queue empty, jump to next arrival
             if (queue.isEmpty()) {
                 int nextAT = ps[nextIdx].arrivalTime;
                 log.append(String.format("  [t=%-3d] IDLE  — next arrival: %s at t=%d%n",
@@ -283,7 +273,7 @@ public class Algorithms {
                 continue;
             }
 
-            // ── Dequeue and execute for up to `quantum` units ─────────
+            // Dequeue and execute for up to `quantum` units
             Process p        = queue.poll();
             int     execTime = Math.min(quantum, p.remainingTime);
             int     start    = time;
@@ -295,13 +285,13 @@ public class Algorithms {
             p.remainingTime -= execTime;
             time = end;
 
-            // ── Enqueue processes that arrived during this slice ───────
+            // Enqueue processes that arrived during this slice
             while (nextIdx < ps.length && ps[nextIdx].arrivalTime <= time)
                 queue.add(ps[nextIdx++]);
 
             gantt.add(new GanttEntry(p.id, start, end));
 
-            // ── Check: done or re-enqueue ──────────────────────────────
+            // Check: done or re-enqueue
             if (p.remainingTime == 0) {
                 p.finishTime     = time;
                 p.turnaroundTime = p.finishTime - p.arrivalTime;
@@ -321,21 +311,21 @@ public class Algorithms {
     }
 
 
-    // ══════════════════════════════════════════════════════════════
+    // =============================================================
     // ALGORITHM 5 — Priority Scheduling (Non-Preemptive)
     //
     // Concept:
     //   At each scheduling point, the process with the HIGHEST
     //   priority among arrived processes is chosen.  Direction
     //   is user-defined:
-    //     • lowerIsBetter=true  → smallest number = best priority
-    //     • lowerIsBetter=false → largest number  = best priority
+    //     • lowerIsBetter=true : smallest number = best priority
+    //     • lowerIsBetter=false : largest number = best priority
     //
     //   The chosen process runs to completion (non-preemptive).
     //
     // Risk: Low-priority processes may starve if high-priority
-    //   jobs keep arriving (not mitigated here — no aging).
-    // ══════════════════════════════════════════════════════════════
+    //   jobs keep arriving (not mitigated here - no aging).
+    // ==============================================================
     public static SchedulerResult priorityNP(Process[] original, boolean lowerIsBetter, StringBuilder log) {
 
         Process[] ps = deepCopy(original);
@@ -348,7 +338,7 @@ public class Algorithms {
 
         while (completed < ps.length) {
 
-            // ── Pick highest-priority ready process ───────────────────
+            // Pick highest-priority ready process
             Process best = null;
             for (Process p : ps) {
                 if (!p.isDone && p.arrivalTime <= time) {
@@ -357,7 +347,7 @@ public class Algorithms {
                 }
             }
 
-            // ── CPU idle ───────────────────────────────────────────────
+            // CPU idle
             if (best == null) {
                 int next = Integer.MAX_VALUE;
                 for (Process p : ps)
@@ -368,7 +358,7 @@ public class Algorithms {
                 continue;
             }
 
-            // ── Dispatch highest-priority process ─────────────────────
+            // Dispatch highest-priority process
             int start = time, end = time + best.burstTime;
             log.append(String.format("  [t=%-3d] RUN   %-4s | priority=%d | BT=%d | finishes t=%d%n",
                     start, best.id, best.priority, best.burstTime, end));
@@ -396,7 +386,7 @@ public class Algorithms {
     }
 
 
-    // ══════════════════════════════════════════════════════════════
+    // ===========================================================
     // ALGORITHM 6 — Priority + Round Robin (Preemptive)
     //
     // Concept:
@@ -410,7 +400,7 @@ public class Algorithms {
     //
     //   A higher-priority arrival immediately preempts any running
     //   lower-priority process at the next quantum boundary.
-    // ══════════════════════════════════════════════════════════════
+    // ============================================================
     public static SchedulerResult priorityRR(Process[] original, int quantum,
                                              boolean lowerIsBetter, StringBuilder log) {
 
@@ -441,14 +431,14 @@ public class Algorithms {
 
         while (Arrays.stream(ps).anyMatch(p -> !p.isDone) || nextIdx < ps.length) {
 
-            // ── Find the best (highest-priority) non-empty tier ───────
+            // Find the best (highest-priority) non-empty tier
             Deque<Process> active = null;
             int activePrio = -1;
             for (int lv : levels) {
                 if (!queues.get(lv).isEmpty()) { active = queues.get(lv); activePrio = lv; break; }
             }
 
-            // ── All queues empty: jump to next arrival ─────────────────
+            // All queues empty: jump to next arrival
             if (active == null) {
                 if (nextIdx >= ps.length) break;
                 int nextAT = ps[nextIdx].arrivalTime;
@@ -461,7 +451,7 @@ public class Algorithms {
                 continue;
             }
 
-            // ── Dequeue from best tier, execute one quantum ────────────
+            // Dequeue from best tier, execute one quantum
             Process p        = active.pollFirst();
             int     execTime = Math.min(quantum, p.remainingTime);
             int     start    = time, end = time + execTime;
@@ -472,7 +462,7 @@ public class Algorithms {
             p.remainingTime -= execTime;
             time = end;
 
-            // ── Enqueue arrivals that came in during this slice ────────
+            // Enqueue arrivals that came in during this slice
             while (nextIdx < ps.length && ps[nextIdx].arrivalTime <= time) {
                 log.append(String.format("         ARRIVE %-4s (prio=%d) → enqueued%n",
                         ps[nextIdx].id, ps[nextIdx].priority));
@@ -482,7 +472,7 @@ public class Algorithms {
             gantt.add(new GanttEntry(p.id, start, end));
 
             if (p.remainingTime == 0) {
-                // ── Process finished ───────────────────────────────────
+                // Process finished
                 p.finishTime     = time;
                 p.turnaroundTime = p.finishTime - p.arrivalTime;
                 p.waitingTime    = p.turnaroundTime - p.burstTime;
@@ -491,7 +481,7 @@ public class Algorithms {
                 log.append(String.format("         DONE  %-4s | CT=%d | WT=%d | TAT=%d%n",
                         p.id, p.finishTime, p.waitingTime, p.turnaroundTime));
             } else {
-                // ── Re-enqueue to back of its tier ────────────────────
+                //  Re-enqueue to back of its tier
                 log.append(String.format("         PREEMPT %-4s | rem=%d → back to prio-%d queue%n",
                         p.id, p.remainingTime, p.priority));
                 active.addLast(p);
@@ -502,9 +492,8 @@ public class Algorithms {
     }
 
 
-    // ══════════════════════════════════════════════════════════════
+
     // HELPER METHODS
-    // ══════════════════════════════════════════════════════════════
 
     /** Deep-copies the process array so algorithms don't mutate originals. */
     private static Process[] deepCopy(Process[] src) {
