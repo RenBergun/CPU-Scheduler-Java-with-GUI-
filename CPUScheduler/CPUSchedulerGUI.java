@@ -307,10 +307,10 @@ public class CPUSchedulerGUI extends JFrame {
         ctScroll.getViewport().setBackground(SURFACE);
 
         // Wrap each section with a labelled header
-        JPanel ganttSec   = wrapWithLabel("GANTT CHART",              ganttScroll);
-        JPanel tableSec   = wrapWithLabel("PROCESS SUMMARY",          tableScroll);
-        JPanel metricsSec = wrapWithLabel("PERFORMANCE METRICS",      metricsPanel);
-        JPanel ctSec      = wrapWithLabel("COMPLETION TIME BREAKDOWN", ctScroll);
+        JPanel ganttSec   = wrapWithLabel("GANTT CHART", ganttScroll);
+        JPanel tableSec   = wrapWithLabel("PROCESS SUMMARY", tableScroll);
+        JPanel metricsSec = wrapWithLabel("PERFORMANCE METRICS", metricsPanel);
+        JPanel ctSec      = wrapWithLabel("COMPLETION TIME BREAKDOWN",ctScroll);
 
         // Stack vertically inside an outer scroll pane
         JPanel stack = new JPanel();
@@ -348,13 +348,19 @@ public class CPUSchedulerGUI extends JFrame {
         JPanel p = new JPanel(new GridLayout(1, 3, 14, 0));
         p.setBackground(BG);
 
-        avgCTLabel  = metricCard("AVG COMPLETION TIME", "—");
-        avgWTLabel  = metricCard("AVG WAITING TIME",    "—");
-        avgTATLabel = metricCard("AVG TURNAROUND TIME", "—");
+        JLabel[] ct  = metricCard("TOTAL COMPLETION TIME", "—");
+        JLabel[] wt  = metricCard("TOTAL WAITING TIME", "—");
+        JLabel[] tat = metricCard("TOTAL TURNAROUND TIME", "—");
 
-        p.add(avgCTLabel.getParent());
-        p.add(avgWTLabel.getParent());
-        p.add(avgTATLabel.getParent());
+
+        avgCTLabel = ct[0];
+        avgWTLabel = wt[0];
+        avgTATLabel = tat[0];
+
+        p.add(ct[0].getParent().getParent());
+        p.add(wt[0].getParent().getParent());
+        p.add(tat[0].getParent().getParent());
+
         return p;
     }
 
@@ -362,7 +368,7 @@ public class CPUSchedulerGUI extends JFrame {
      * Builds one metric card.
      * Returns the value JLabel so renderMetrics() can update it.
      */
-    private JLabel metricCard(String title, String initVal) {
+    private JLabel[] metricCard(String title, String initVal) {
         JPanel card = new JPanel(new BorderLayout(0, 6));
         card.setBackground(CARD);
         card.setBorder(new CompoundBorder(
@@ -381,7 +387,7 @@ public class CPUSchedulerGUI extends JFrame {
         val.setForeground(ACCENT3);
 
         // Unit sub-label
-        JLabel unit = new JLabel("time units", SwingConstants.CENTER);
+        JLabel unit = new JLabel("", SwingConstants.CENTER);
         unit.setFont(new Font("SansSerif", Font.PLAIN, 11));
         unit.setForeground(MUTED);
 
@@ -392,7 +398,7 @@ public class CPUSchedulerGUI extends JFrame {
 
         card.add(lbl,    BorderLayout.NORTH);
         card.add(bottom, BorderLayout.CENTER);
-        return val;
+        return new JLabel[]{val, unit};
     }
 
 
