@@ -39,11 +39,11 @@ public class CPUSchedulerGUI extends JFrame {
     private static final int F_TABLE     = 13;   // results table body
     private static final int F_METRIC_LBL= 11;   // metric card title
     private static final int F_METRIC_VAL= 30;   // metric card big number
-    private static final int F_CT_TITLE  = 13;   // completion-time panel heading
+    //private static final int F_CT_TITLE  = 13;   // completion-time panel heading
     private static final int F_CT_ROW    = 13;   // completion-time row text
-    private static final int F_GANTT_PID = 13;   // process label inside Gantt block
-    private static final int F_GANTT_DUR = 10;   // duration sub-label in Gantt block
-    private static final int F_GANTT_TIM = 11;   // time-axis numbers below Gantt
+    private static final int F_GANTT_PID = 16;   // process label inside Gantt block
+    private static final int F_GANTT_DUR = 12;   // duration sub-label in Gantt block
+    private static final int F_GANTT_TIM = 13;   // time-axis numbers below Gantt
 
     // Application state
     private String selectedAlgo = "FCFS";
@@ -73,7 +73,7 @@ public class CPUSchedulerGUI extends JFrame {
         "First-Come, First-Served - Non-Preemptive",
         "Shortest Job First - Non-Preemptive",
         "Shortest Remaining Time - Preemptive",
-        "Round Robin - Preemptive (requires Quantum)",
+        "Round Robin - Preemptive (requires Time Quantum)",
         "Priority Scheduling - Non-Preemptive",
         "Priority + Round Robin - Preemptive"
     };
@@ -121,7 +121,7 @@ public class CPUSchedulerGUI extends JFrame {
         p.setBorder(new MatteBorder(0, 0, 1, 0, BORDER));
         p.setPreferredSize(new Dimension(0, 62));
 
-        // Title — larger, bold
+        // Title
         JLabel title = new JLabel("  ⚡  CPU SCHEDULING SIMULATOR");
         title.setFont(new Font("SansSerif", Font.BOLD, F_HEADER));
         title.setForeground(ACCENT);
@@ -156,13 +156,21 @@ public class CPUSchedulerGUI extends JFrame {
         root.add(algGrid);
 
         // Algorithm description note
-        algoNoteLabel = new JLabel(" ");
+        algoNoteLabel = new JLabel(" ", SwingConstants.CENTER);
+        algoNoteLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        algoNoteLabel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         algoNoteLabel.setFont(new Font("SansSerif", Font.ITALIC, F_NOTE));
         algoNoteLabel.setForeground(WARN);
         algoNoteLabel.setBorder(new EmptyBorder(8, 4, 8, 4));
         algoNoteLabel.setAlignmentX(LEFT_ALIGNMENT);
         algoNoteLabel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        root.add(algoNoteLabel);
+
+        JPanel noteWrapper = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        noteWrapper.setBackground(BG);
+        noteWrapper.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+
+        noteWrapper.add(algoNoteLabel);
+        root.add(noteWrapper);
 
         root.add(Box.createVerticalStrut(10));
         root.add(makeSeparator());
@@ -230,13 +238,22 @@ public class CPUSchedulerGUI extends JFrame {
         runBtn.setBorder(new EmptyBorder(14, 28, 14, 28));
         runBtn.setFocusPainted(false);
         runBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
         runBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+        runBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        runBtn.setMaximumSize(new Dimension(300, 50));
+
         runBtn.addActionListener(e -> runSimulation());
         runBtn.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) { runBtn.setBackground(new Color(0x9C6EFF)); }
             public void mouseExited(MouseEvent e)  { runBtn.setBackground(ACCENT2); }
         });
-        root.add(runBtn);
+        JPanel btnWrapper = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        btnWrapper.setBackground(BG);
+        btnWrapper.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
+
+        btnWrapper.add(runBtn);
+        root.add(btnWrapper);
 
         JScrollPane scroll = new JScrollPane(root);
         scroll.setBorder(null);
@@ -287,7 +304,7 @@ public class CPUSchedulerGUI extends JFrame {
         metricsPanel.setBorder(new EmptyBorder(8, 14, 8, 14));
 
         // Completion Time breakdown
-        // Shows each process's completion time in a readable card grid
+        // Shows each processes' completion time in a readable card grid
         ctBreakdownPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
         ctBreakdownPanel.setBackground(SURFACE);
         ctBreakdownPanel.setBorder(new EmptyBorder(4, 6, 4, 6));
@@ -307,10 +324,10 @@ public class CPUSchedulerGUI extends JFrame {
         ctScroll.getViewport().setBackground(SURFACE);
 
         // Wrap each section with a labelled header
-        JPanel ganttSec   = wrapWithLabel("GANTT CHART", ganttScroll);
-        JPanel tableSec   = wrapWithLabel("PROCESS SUMMARY", tableScroll);
+        JPanel ganttSec = wrapWithLabel("GANTT CHART", ganttScroll);
+        JPanel tableSec = wrapWithLabel("PROCESS SUMMARY", tableScroll);
         JPanel metricsSec = wrapWithLabel("PERFORMANCE METRICS", metricsPanel);
-        JPanel ctSec      = wrapWithLabel("COMPLETION TIME BREAKDOWN",ctScroll);
+        JPanel ctSec = wrapWithLabel("COMPLETION TIME BREAKDOWN",ctScroll);
 
         // Stack vertically inside an outer scroll pane
         JPanel stack = new JPanel();
@@ -329,7 +346,7 @@ public class CPUSchedulerGUI extends JFrame {
         return root;
     }
 
-    /** Wraps a component with a coloured section-title label above it. */
+    /** Wraps a component with a colored section-title label above it. */
     private JPanel wrapWithLabel(String label, JComponent content) {
         JPanel p = new JPanel(new BorderLayout(0, 4));
         p.setBackground(BG);
@@ -345,20 +362,20 @@ public class CPUSchedulerGUI extends JFrame {
     // METRICS PANEL - three stat cards: Avg CT, Avg WT, Avg TAT
 
     private JPanel buildMetricsPanel() {
-        JPanel p = new JPanel(new GridLayout(1, 3, 14, 0));
+        JPanel p = new JPanel(new GridLayout(1, 2, 14, 0));
         p.setBackground(BG);
 
-        JLabel[] ct  = metricCard("TOTAL COMPLETION TIME", "—");
-        JLabel[] wt  = metricCard("TOTAL WAITING TIME", "—");
-        JLabel[] tat = metricCard("TOTAL TURNAROUND TIME", "—");
+        JLabel[] ct  = metricCard("AVERAGE COMPLETION TIME", "—");
+       // JLabel[] wt  = metricCard("AVERAGE WAITING TIME", "—");
+        JLabel[] tat = metricCard("AVERAGE TURNAROUND TIME", "—");
 
 
         avgCTLabel = ct[0];
-        avgWTLabel = wt[0];
+        //avgWTLabel = wt[0];
         avgTATLabel = tat[0];
 
         p.add(ct[0].getParent().getParent());
-        p.add(wt[0].getParent().getParent());
+        //p.add(wt[0].getParent().getParent());
         p.add(tat[0].getParent().getParent());
 
         return p;
@@ -387,17 +404,17 @@ public class CPUSchedulerGUI extends JFrame {
         val.setForeground(ACCENT3);
 
         // Unit sub-label
-        JLabel unit = new JLabel("", SwingConstants.CENTER);
+        JLabel unit = new JLabel("time units", SwingConstants.CENTER);
         unit.setFont(new Font("SansSerif", Font.PLAIN, 11));
         unit.setForeground(MUTED);
 
         JPanel bottom = new JPanel(new BorderLayout());
         bottom.setBackground(CARD);
-        bottom.add(val,  BorderLayout.CENTER);
+        bottom.add(val, BorderLayout.CENTER);
         bottom.add(unit, BorderLayout.SOUTH);
 
-        card.add(lbl,    BorderLayout.NORTH);
-        card.add(bottom, BorderLayout.CENTER);
+        card.add(lbl, BorderLayout.NORTH);
+        card.add(bottom,BorderLayout.CENTER);
         return new JLabel[]{val, unit};
     }
 
@@ -433,9 +450,9 @@ public class CPUSchedulerGUI extends JFrame {
             row.setBackground(BG);
             row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
 
-            pidFields[i]  = styledField("P" + (i + 1));
-            atFields[i]   = styledField(String.valueOf(i == 0 ? 0 : i));
-            btFields[i]   = styledField(String.valueOf((i + 1) * 2));
+            pidFields[i] = styledField("P" + (i + 1));
+            atFields[i] = styledField(String.valueOf(i == 0 ? 0 : i));
+            btFields[i] = styledField(String.valueOf((i + 1) * 2));
             prioFields[i] = styledField(String.valueOf(i + 1));
 
             row.add(pidFields[i]);
@@ -464,8 +481,8 @@ public class CPUSchedulerGUI extends JFrame {
             algoButtons[i].setBorder(new LineBorder(active ? ACCENT2 : BORDER, active ? 2 : 1));
         }
 
-        boolean needsQ    = algo.equals("Round Robin") || algo.equals("Priority + RR");
-        boolean needsPrio = algo.equals("Priority")    || algo.equals("Priority + RR");
+        boolean needsQ = algo.equals("Round Robin") || algo.equals("Priority + RR");
+        boolean needsPrio = algo.equals("Priority")  || algo.equals("Priority + RR");
 
         // Toggle quantum / priority-direction rows by name
         for (Component c : ((JPanel) quantumSpinner.getParent()).getParent().getComponents()) {
@@ -476,11 +493,14 @@ public class CPUSchedulerGUI extends JFrame {
             }
         }
 
-        // Update algorithm description note
+        // Algorithm description note
         for (int i = 0; i < ALGO_NAMES.length; i++) {
             if (ALGO_NAMES[i].equals(algo)) {
-                algoNoteLabel.setText("<html><i>" + ALGO_DESC[i] + "</i></html>");
-                break;
+                algoNoteLabel.setText(
+                        "<html><div style='text-align:center;'>" +
+                                "<i>" + ALGO_DESC[i] + "</i>" +
+                                "</div></html>"
+                );
             }
         }
 
@@ -488,9 +508,8 @@ public class CPUSchedulerGUI extends JFrame {
     }
 
 
-    // SIMULATION RUNNER
+    // SIMULATION RUNNER - this is where rendering happens
     // Reads input -> validates -> calls algorithm -> renders all panels
-
     private void runSimulation() {
 
         // Validate and collect process data
@@ -501,8 +520,8 @@ public class CPUSchedulerGUI extends JFrame {
             try {
                 String pid = pidFields[i].getText().trim();
                 if (pid.isEmpty()) pid = "P" + (i + 1);
-                int at   = Integer.parseInt(atFields[i].getText().trim());
-                int bt   = Integer.parseInt(btFields[i].getText().trim());
+                int at = Integer.parseInt(atFields[i].getText().trim());
+                int bt = Integer.parseInt(btFields[i].getText().trim());
                 int prio = needsPrio ? Integer.parseInt(prioFields[i].getText().trim()) : 0;
                 if (bt < 1 || at < 0) throw new NumberFormatException();
                 processes[i] = new Process(pid, at, bt, prio, i);
@@ -535,7 +554,7 @@ public class CPUSchedulerGUI extends JFrame {
         renderGantt(result.gantt, processes);
         renderTable(result.results, needsPrio);
         renderMetrics(result.results);
-        renderCTBreakdown(result.results);   // new panel replaces trace log
+        renderCTBreakdown(result.results);
     }
 
 
@@ -579,7 +598,7 @@ public class CPUSchedulerGUI extends JFrame {
         }
         int n = results.size();
         avgCTLabel .setText(String.format("%.2f", sumCT  / n));
-        avgWTLabel .setText(String.format("%.2f", sumWT  / n));
+        //avgWTLabel .setText(String.format("%.2f", sumWT  / n));
         avgTATLabel.setText(String.format("%.2f", sumTAT / n));
     }
 
@@ -613,13 +632,13 @@ public class CPUSchedulerGUI extends JFrame {
             JPanel stats = new JPanel(new GridLayout(4, 1, 0, 2));
             stats.setBackground(CARD);
 
-            stats.add(ctStatRow("CT", p.finishTime,      ACCENT3));  // Completion Time — highlighted green
-            stats.add(ctStatRow("WT", p.waitingTime,     WARN));     // Waiting Time — orange
-            stats.add(ctStatRow("TAT", p.turnaroundTime, TEXT));     // Turnaround Time
-            stats.add(ctStatRow("BT", p.burstTime,       MUTED));    // Burst Time (reference)
+            stats.add(ctStatRow("CT", p.finishTime, ACCENT3));
+            stats.add(ctStatRow("WT", p.waitingTime, WARN));
+            stats.add(ctStatRow("TAT", p.turnaroundTime, TEXT));
+            stats.add(ctStatRow("BT", p.burstTime, MUTED));
 
             card.add(pidLbl, BorderLayout.NORTH);
-            card.add(stats,  BorderLayout.CENTER);
+            card.add(stats, BorderLayout.CENTER);
 
             ctBreakdownPanel.add(card);
         }
@@ -630,7 +649,6 @@ public class CPUSchedulerGUI extends JFrame {
 
     /**
      * Creates one labelled stat row inside a CT breakdown card.
-     * Format: "CT  =  14"  — label left, value right, coloured.
      */
     private JPanel ctStatRow(String label, int value, Color valueColor) {
         JPanel row = new JPanel(new BorderLayout());
@@ -651,16 +669,16 @@ public class CPUSchedulerGUI extends JFrame {
 
 
     // UI FACTORY HELPERS
-    /** Section title label (e.g. "01  SELECT ALGORITHM") */
+    /** Section title label (example "01  SELECT ALGORITHM") */
     private JLabel sectionLabel(String text) {
-        JLabel l = new JLabel(text);
+        JLabel l = new JLabel(text, SwingConstants.CENTER);
         l.setFont(new Font("SansSerif", Font.BOLD, F_SECTION));
         l.setForeground(ACCENT);
-        l.setAlignmentX(LEFT_ALIGNMENT);
+        l.setAlignmentX(Component.CENTER_ALIGNMENT);
         return l;
     }
 
-    /** Muted label for configuration fields (e.g. "Processes:") */
+    /** Muted label for configuration fields (example "Processes:") */
     private JLabel fieldLabel(String text) {
         JLabel l = new JLabel(text);
         l.setFont(new Font("SansSerif", Font.PLAIN, F_LABEL));
@@ -676,7 +694,6 @@ public class CPUSchedulerGUI extends JFrame {
         return l;
     }
 
-    /** Dark styled text field used in the process input rows */
     private JTextField styledField(String val) {
         JTextField f = new JTextField(val);
         f.setFont(new Font("Monospaced", Font.PLAIN, F_FIELD));
@@ -744,7 +761,7 @@ public class CPUSchedulerGUI extends JFrame {
         t.setBackground(SURFACE);
         t.setForeground(TEXT);
         t.setFont(new Font("Monospaced", Font.PLAIN, F_TABLE));
-        t.setRowHeight(32);       // taller rows for readability
+        t.setRowHeight(32);
         t.setGridColor(BORDER);
         t.setShowGrid(true);
         t.setSelectionBackground(new Color(0x1A1040));
@@ -761,7 +778,7 @@ public class CPUSchedulerGUI extends JFrame {
         h.setBorder(new MatteBorder(0, 0, 2, 0, BORDER));
         h.setPreferredSize(new Dimension(0, 34));
 
-        // Custom cell renderer — centre-aligned, colour-coded by column
+        // Custom cell renderer — centre-aligned, color-coded by column
         DefaultTableCellRenderer centre = new DefaultTableCellRenderer() {
             public Component getTableCellRendererComponent(
                     JTable tbl, Object val, boolean sel, boolean focus, int row, int col) {
@@ -770,10 +787,10 @@ public class CPUSchedulerGUI extends JFrame {
                 // Alternate row shading
                 setBackground(sel ? new Color(0x1A1040)
                                   : (row % 2 == 0 ? SURFACE : CARD));
-                // Column colour coding
-                if (col == 4)      setForeground(ACCENT3);  // CT  → green
-                else if (col >= 5) setForeground(WARN);     // WT, TAT → orange
-                else               setForeground(TEXT);
+                // Column color coding
+                if (col == 4) setForeground(ACCENT3);
+                else if (col >= 5) setForeground(WARN);
+                else setForeground(TEXT);
                 setBorder(new EmptyBorder(0, 8, 0, 8));
                 return this;
             }
@@ -803,7 +820,7 @@ public class CPUSchedulerGUI extends JFrame {
         }
 
         void setData(List<GanttEntry> gantt, Map<String,Integer> colorMap) {
-            this.gantt    = gantt;
+            this.gantt = gantt;
             this.colorMap = colorMap;
             // Widen so all blocks stay readable without squishing
             int w = Math.max(900, gantt.size() * 72);
@@ -825,14 +842,14 @@ public class CPUSchedulerGUI extends JFrame {
             }
 
             Graphics2D g2 = (Graphics2D) g;
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,      RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,  RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
             int totalTime = gantt.get(gantt.size() - 1).end;
             int W = getWidth();
 
-            int blockH = 62;
-            int topY   = 12;
+            int blockH = 70;
+            int topY   = 16;
             int timeY  = topY + blockH + 16;
 
             double scale = (double)(W - 24) / totalTime;
@@ -870,7 +887,7 @@ public class CPUSchedulerGUI extends JFrame {
                 // Duration sub-label
                 if (e.duration() > 1) {
                     String dur = e.duration() + "t";
-                    Font durFont = new Font("Monospaced", Font.PLAIN, F_GANTT_DUR);
+                    Font durFont = new Font("Monospaced", Font.BOLD, F_GANTT_DUR);
                     g2.setFont(durFont);
                     FontMetrics dfm = g2.getFontMetrics();
                     int dx = x + (bw - dfm.stringWidth(dur)) / 2;
@@ -880,7 +897,7 @@ public class CPUSchedulerGUI extends JFrame {
                 }
 
                 // Start-time marker below block
-                g2.setFont(new Font("Monospaced", Font.PLAIN, F_GANTT_TIM));
+                g2.setFont(new Font("Monospaced", Font.BOLD, F_GANTT_TIM));
                 g2.setColor(MUTED);
                 g2.drawString(String.valueOf(e.start), x, timeY);
 
@@ -888,7 +905,7 @@ public class CPUSchedulerGUI extends JFrame {
             }
 
             // Final end-time marker
-            g2.setFont(new Font("Monospaced", Font.PLAIN, F_GANTT_TIM));
+            g2.setFont(new Font("Monospaced", Font.BOLD, F_GANTT_TIM));
             g2.setColor(MUTED);
             String endStr = String.valueOf(gantt.get(gantt.size() - 1).end);
             g2.drawString(endStr, x - g2.getFontMetrics().stringWidth(endStr), timeY);
