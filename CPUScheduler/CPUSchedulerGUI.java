@@ -244,6 +244,7 @@ public class CPUSchedulerGUI extends JFrame {
         runBtn.setMaximumSize(new Dimension(300, 50));
 
         runBtn.addActionListener(e -> runSimulation());
+
         runBtn.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) { runBtn.setBackground(new Color(0x9C6EFF)); }
             public void mouseExited(MouseEvent e)  { runBtn.setBackground(ACCENT2); }
@@ -259,7 +260,43 @@ public class CPUSchedulerGUI extends JFrame {
         scroll.setBorder(null);
         scroll.getViewport().setBackground(BG);
         scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+
+        // Reset button
+        JButton resetBtn = new JButton("⟲   RESET ALL");
+        resetBtn.setFont(new Font("SansSerif", Font.BOLD, 15));
+        resetBtn.setForeground(Color.WHITE);
+        resetBtn.setBackground(new Color(0xFF6B35));
+        resetBtn.setBorder(new EmptyBorder(14, 28, 14, 28));
+        resetBtn.setFocusPainted(false);
+        resetBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        resetBtn.setMaximumSize(new Dimension(300, 50));
+        resetBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        resetBtn.addActionListener(e -> resetAll());
+        runBtn.addActionListener(e -> runSimulation());
+
+        resetBtn.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) {
+                resetBtn.setBackground(new Color(0xFF8A5A));
+            }
+            public void mouseExited(MouseEvent e) {
+                resetBtn.setBackground(new Color(0xFF6B35));
+            }
+        });
+
+        JPanel resetWrapper = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        resetWrapper.setBackground(BG);
+        resetWrapper.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
+        resetWrapper.add(resetBtn);
+
+        root.add(Box.createVerticalStrut(8));
+        root.add(resetWrapper);
+
+
         return scroll;
+
     }
 
 
@@ -365,17 +402,17 @@ public class CPUSchedulerGUI extends JFrame {
         JPanel p = new JPanel(new GridLayout(1, 2, 14, 0));
         p.setBackground(BG);
 
-        JLabel[] ct  = metricCard("AVERAGE COMPLETION TIME", "—");
-       // JLabel[] wt  = metricCard("AVERAGE WAITING TIME", "—");
+        //JLabel[] ct  = metricCard("AVERAGE COMPLETION TIME", "—");
+        JLabel[] wt  = metricCard("AVERAGE WAITING TIME", "—");
         JLabel[] tat = metricCard("AVERAGE TURNAROUND TIME", "—");
 
 
-        avgCTLabel = ct[0];
-        //avgWTLabel = wt[0];
+        //avgCTLabel = ct[0];
+        avgWTLabel = wt[0];
         avgTATLabel = tat[0];
 
-        p.add(ct[0].getParent().getParent());
-        //p.add(wt[0].getParent().getParent());
+        //p.add(ct[0].getParent().getParent());
+        p.add(wt[0].getParent().getParent());
         p.add(tat[0].getParent().getParent());
 
         return p;
@@ -507,7 +544,38 @@ public class CPUSchedulerGUI extends JFrame {
         rebuildProcessRows();
     }
 
+    private void resetAll() {
 
+        // Reset input fields
+        if (pidFields != null) {
+            for (int i = 0; i < pidFields.length; i++) {
+                pidFields[i].setText("P" + (i + 1));
+                atFields[i].setText(String.valueOf(i == 0 ? 0 : i));
+                btFields[i].setText(String.valueOf((i + 1) * 2));
+                if (prioFields != null && prioFields[i] != null) {
+                    prioFields[i].setText(String.valueOf(i + 1));
+                }
+            }
+        }
+
+        // Reset outputs
+        resultModel.setRowCount(0);
+
+        ganttPanel.setData(new ArrayList<>(), new HashMap<>());
+
+        avgWTLabel.setText("—");
+        avgTATLabel.setText("—");
+
+        ctBreakdownPanel.removeAll();
+        JLabel placeholder = new JLabel("  Run a simulation to see per-process completion times.");
+        placeholder.setFont(new Font("SansSerif", Font.ITALIC, F_CT_ROW));
+        placeholder.setForeground(MUTED);
+        ctBreakdownPanel.add(placeholder);
+        ctBreakdownPanel.revalidate();
+        ctBreakdownPanel.repaint();
+
+        ganttPanel.repaint();
+    }
     // SIMULATION RUNNER - this is where rendering happens
     // Reads input -> validates -> calls algorithm -> renders all panels
     private void runSimulation() {
@@ -597,8 +665,8 @@ public class CPUSchedulerGUI extends JFrame {
             sumTAT += p.turnaroundTime;
         }
         int n = results.size();
-        avgCTLabel .setText(String.format("%.2f", sumCT  / n));
-        //avgWTLabel .setText(String.format("%.2f", sumWT  / n));
+        //avgCTLabel .setText(String.format("%.2f", sumCT  / n));
+        avgWTLabel .setText(String.format("%.2f", sumWT  / n));
         avgTATLabel.setText(String.format("%.2f", sumTAT / n));
     }
 

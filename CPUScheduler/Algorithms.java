@@ -162,7 +162,7 @@ public class Algorithms {
 
         logHeader(log, "SRT — Shortest Remaining Time (Preemptive)");
 
-        while (completed < ps.length && time <= maxTime) {
+        while (completed < ps.length) {
 
             // Find the process with minimum remaining time
             Process running = null;
@@ -226,6 +226,7 @@ public class Algorithms {
         }
 
         return new SchedulerResult(mergeGantt(gantt), results);
+
     }
 
 
