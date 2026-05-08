@@ -1,0 +1,2 @@
+First, open the repository link and click the folder. Then, the user downloads all .java classes and run/execute them in a Java IDE (example IntelliJ, EclipseIDE, etc.). 
+The program contains two ways on how to execute the code, either via terminal/CLI, or via a Java GUI for better User Interface Experience.
